@@ -1,25 +1,25 @@
-import 'dart:js';
-
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'package:flutter/services.dart';
 
-Future<dynamic> handleWebMethodCall(MethodCall call, JsObject context) async {
-  final analytics = JsObject.fromBrowserObject(context['posthog']);
+Future<dynamic> handleWebMethodCall(MethodCall call, JSObject context) async {
+  final JSObject analytics = context.getProperty('posthog'.toJS)!;
   switch (call.method) {
     case 'identify':
       final userProperties = call.arguments['userProperties'] ?? {};
       final userPropertiesSetOnce =
           call.arguments['userPropertiesSetOnce'] ?? {};
-      analytics.callMethod('identify', [
-        call.arguments['userId'],
-        JsObject.jsify(userProperties),
-        JsObject.jsify(userPropertiesSetOnce),
+      analytics.callMethodVarArgs('identify'.toJS, [
+        (call.arguments['userId'] as String).toJS,
+        userProperties.jsify(),
+        userPropertiesSetOnce.jsify(),
       ]);
       break;
     case 'capture':
       final properties = call.arguments['properties'] ?? {};
-      analytics.callMethod('capture', [
-        call.arguments['eventName'],
-        JsObject.jsify(properties),
+      analytics.callMethodVarArgs('capture'.toJS, [
+        (call.arguments['eventName'] as String).toJS,
+        properties.jsify(),
       ]);
       break;
     case 'screen':
@@ -27,67 +27,69 @@ Future<dynamic> handleWebMethodCall(MethodCall call, JsObject context) async {
       final screenName = call.arguments['screenName'];
       properties['\$screen_name'] = screenName;
 
-      analytics.callMethod('capture', [
-        '\$screen',
-        JsObject.jsify(properties),
+      analytics.callMethodVarArgs('capture'.toJS, [
+        '\$screen'.toJS,
+        properties.jsify(),
       ]);
       break;
     case 'alias':
-      analytics.callMethod('alias', [
-        call.arguments['alias'],
+      analytics.callMethodVarArgs('alias'.toJS, [
+        (call.arguments['alias'] as String).toJS,
       ]);
       break;
     case 'distinctId':
-      final distinctId = analytics.callMethod('get_distinct_id');
-      return distinctId;
+      final distinctId = analytics.callMethod('get_distinct_id'.toJS);
+      return distinctId?.dartify();
     case 'reset':
-      analytics.callMethod('reset');
+      analytics.callMethod('reset'.toJS);
       break;
     case 'debug':
-      analytics.callMethod('debug', [
-        call.arguments['debug'],
+      analytics.callMethodVarArgs('debug'.toJS, [
+        call.arguments['debug'].toJS,
       ]);
       break;
     case 'isFeatureEnabled':
-      final isFeatureEnabled = analytics.callMethod('isFeatureEnabled', [
-        call.arguments['key'],
+      final isFeatureEnabled =
+          analytics.callMethodVarArgs('isFeatureEnabled'.toJS, [
+        (call.arguments['key'] as String).toJS,
       ]);
       return isFeatureEnabled;
     case 'group':
-      analytics.callMethod('group', [
-        call.arguments['groupType'],
-        call.arguments['groupKey'],
-        JsObject.jsify(call.arguments['groupProperties'] ?? {}),
+      analytics.callMethodVarArgs('group'.toJS, [
+        call.arguments['groupType'].toJS,
+        call.arguments['groupKey'].toJS,
+        (call.arguments['groupProperties'] ?? {}).jsify(),
       ]);
       break;
     case 'reloadFeatureFlags':
-      analytics.callMethod('reloadFeatureFlags');
+      analytics.callMethod('reloadFeatureFlags'.toJS);
       break;
     case 'enable':
-      analytics.callMethod('opt_in_capturing');
+      analytics.callMethod('opt_in_capturing'.toJS);
       break;
     case 'disable':
-      analytics.callMethod('opt_out_capturing');
+      analytics.callMethod('opt_out_capturing'.toJS);
       break;
     case 'getFeatureFlag':
-      final featureFlag = analytics.callMethod('getFeatureFlag', [
-        call.arguments['key'],
+      final featureFlag = analytics.callMethodVarArgs('getFeatureFlag'.toJS, [
+        call.arguments['key'].toJS,
       ]);
       return featureFlag;
     case 'getFeatureFlagPayload':
-      final featureFlag = analytics.callMethod('getFeatureFlagPayload', [
-        call.arguments['key'],
+      final featureFlag =
+          analytics.callMethodVarArgs('getFeatureFlagPayload'.toJS, [
+        call.arguments['key'].toJS,
       ]);
-      return featureFlag;
+      return featureFlag?.dartify();
     case 'register':
       final properties = {call.arguments['key']: call.arguments['value']};
-      analytics.callMethod('register', [
-        JsObject.jsify(properties),
+      analytics.callMethodVarArgs('register'.toJS, [
+        properties.jsify(),
       ]);
       break;
     case 'unregister':
-      analytics.callMethod('unregister', [
-        call.arguments['key'],
+      analytics.callMethodVarArgs('unregister'.toJS, [
+        call.arguments['key'].toJS,
       ]);
       break;
     case 'flush':
